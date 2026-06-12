@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RentSlip — Free Rent Receipt Generator (Print or PDF, No Signup)</title>
+<meta name="description" content="Generate a professional rent receipt in 30 seconds. Fill in the details, print or save as PDF. 100% in your browser — nothing uploaded, no signup, no watermark, free.">
+<link rel="canonical" href="https://robin0725.github.io/rentslip/">
+<meta property="og:title" content="RentSlip — Free Rent Receipt Generator">
+<meta property="og:description" content="Rent receipts in 30 seconds. Print or save as PDF. Nothing uploaded — it all happens in your browser. No signup, no watermark.">
+<meta property="og:url" content="https://robin0725.github.io/rentslip/">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --bg: #0e1118;
+    --panel: #171c28;
+    --panel2: #1f2535;
+    --border: #2b3349;
+    --text: #ecf0f8;
+    --muted: #8e98ad;
+    --accent: #4f8cf7;
+    --accent-dark: #2f6fe0;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+  header {
+    padding: 16px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-weight: 800; font-size: 19px; }
+  .logo span { color: var(--accent); }
+  .pro-pill {
+    background: rgba(79,140,247,.1);
+    border: 1px solid rgba(79,140,247,.45);
+    color: var(--accent);
+    padding: 7px 14px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .pro-pill:hover { background: rgba(79,140,247,.18); }
+  .hero { text-align: center; padding: 44px 20px 10px; }
+  .hero h1 { font-size: clamp(26px, 4.5vw, 42px); letter-spacing: -.8px; line-height: 1.15; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero > p { color: var(--muted); max-width: 640px; margin: 14px auto 0; font-size: 16px; line-height: 1.65; }
+  .app {
+    display: flex;
+    gap: 24px;
+    max-width: 1120px;
+    margin: 36px auto 50px;
+    padding: 0 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .controls {
+    flex: 1 1 420px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    min-width: 300px;
+  }
+  .controls h2 { font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 7px; }
+  .field label .req-star { color: var(--accent); }
+  .field input[type=text], .field input[type=date], .field input[type=number], .field textarea, .field select {
+    width: 100%;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 9px;
+    padding: 11px 13px;
+    font-size: 15px;
+    font-family: inherit;
+  }
+  .field input[type=date] { color-scheme: dark; }
+  .field textarea { resize: vertical; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--accent); }
+  .field input.invalid, .field textarea.invalid { border-color: var(--danger); }
+  .hint { display: none; color: var(--danger); font-size: 12px; margin-top: 5px; }
+  .hint.show { display: block; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid2 .field { margin-bottom: 14px; }
+  .amount-row { display: grid; grid-template-columns: 1fr 130px; gap: 12px; }
+  .words-row { display: flex; gap: 8px; }
+  .words-row input { flex: 1; }
+  .autobtn {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    border-radius: 9px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .autobtn:hover { border-color: var(--accent); }
+  .checkrow { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--text); cursor: pointer; margin-bottom: 4px; }
+  .checkrow input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+  .preview-col {
+    flex: 1 1 480px;
+    min-width: 300px;
+    position: sticky;
+    top: 20px;
+  }
+  .preview-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+
+  /* ---------- The receipt document ---------- */
+  .receipt {
+    background: #ffffff;
+    color: #1a1d23;
+    border-radius: 6px;
+    padding: 34px 38px;
+    font-family: Georgia, "Times New Roman", serif;
+    box-shadow: 0 8px 30px rgba(0,0,0,.45);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .r-inner { border: 2px solid #1a1d23; padding: 26px 28px; }
+  .r-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; border-bottom: 2px solid #1a1d23; padding-bottom: 14px; margin-bottom: 18px; }
+  .r-title { font-size: 24px; font-weight: 700; letter-spacing: 3px; }
+  .r-title small { display: block; font-size: 10px; letter-spacing: 2px; font-weight: 400; color: #6b7280; margin-top: 4px; text-transform: uppercase; }
+  .r-meta { text-align: right; font-size: 13px; line-height: 1.7; white-space: nowrap; }
+  .r-meta b { font-weight: 700; }
+  .r-row { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #e3e5ea; font-size: 14px; }
+  .r-row .r-label { flex: 0 0 145px; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; padding-top: 3px; }
+  .r-row .r-val { flex: 1; line-height: 1.5; }
+  .r-val.placeholder { color: #b6bac3; font-style: italic; }
+  .r-amountbox {
+    margin: 18px 0 8px;
+    background: #f2f4f8;
+    border: 1.5px solid #1a1d23;
+    border-radius: 4px;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .r-amountbox .r-label { color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .r-amount { font-size: 26px; font-weight: 700; letter-spacing: .5px; }
+  .r-words { font-size: 13px; font-style: italic; color: #374151; padding: 2px 2px 10px; border-bottom: 1px solid #e3e5ea; min-height: 18px; }
+  .r-notes { font-size: 13px; color: #374151; padding: 10px 2px 0; }
+  .r-notes b { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; font-weight: 700; }
+  .r-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-top: 42px; }
+  .r-recby { font-size: 13px; color: #374151; }
+  .r-sig { text-align: center; min-width: 200px; }
+  .r-sigline { border-bottom: 1.5px solid #1a1d23; height: 30px; }
+  .r-sig small { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; }
+  /* ---------- end receipt ---------- */
+
+  .actions { display: flex; gap: 10px; margin-top: 16px; }
+  .btn {
+    flex: 1;
+    background: var(--accent);
+    color: #07162e;
+    border: none;
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn.ghost { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+  .btn:hover { opacity: .88; }
+  .helper { margin-top: 12px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .helper b { color: var(--accent); }
+  .form-msg { display: none; color: var(--danger); font-size: 13px; margin-top: 10px; }
+  .form-msg.show { display: block; }
+  .content { max-width: 760px; margin: 0 auto; padding: 10px 20px 70px; }
+  .content h2 { font-size: 22px; margin: 36px 0 12px; letter-spacing: -.3px; }
+  .content p, .content li { color: var(--muted); font-size: 15px; line-height: 1.78; }
+  .content ul { padding-left: 22px; }
+  .content li { margin-bottom: 10px; }
+  .content li b { color: var(--text); }
+  .callout {
+    background: rgba(79,140,247,.07);
+    border: 1px solid rgba(79,140,247,.3);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-top: 16px;
+  }
+  .callout p { color: var(--text); }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none; align-items: center; justify-content: center; z-index: 50; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 30px; max-width: 460px; margin: 20px; }
+  .modal h3 { margin-bottom: 12px; }
+  .modal .price { color: var(--accent); font-weight: 800; }
+  .modal p, .modal li { color: var(--muted); font-size: 14px; line-height: 1.75; }
+  .modal ul { padding-left: 20px; margin: 10px 0 16px; }
+  .modal button { background: var(--accent); color: #07162e; border: none; padding: 10px 24px; border-radius: 9px; font-weight: 700; cursor: pointer; }
+  footer { border-top: 1px solid var(--border); padding: 22px 28px; color: var(--muted); font-size: 13px; line-height: 1.9; }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .foot-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; max-width: 1120px; margin: 0 auto; }
+
+  @media (max-width: 720px) {
+    .preview-col { position: static; }
+    .receipt { padding: 22px 18px; }
+    .r-inner { padding: 18px 16px; }
+    .r-row .r-label { flex-basis: 110px; }
+  }
+
+  /* ---------- Print: only the receipt, one clean page ---------- */
+  @media print {
+    @page { size: auto; margin: 16mm; }
+    body { background: #ffffff; }
+    header, .hero, .content, footer, .modal-bg,
+    .controls, .preview-label, .actions, .form-msg, .helper { display: none !important; }
+    .app { display: block; margin: 0; padding: 0; max-width: none; }
+    .preview-col { position: static; min-width: 0; }
+    .receipt {
+      box-shadow: none;
+      border-radius: 0;
+      padding: 0;
+      page-break-inside: avoid;
+    }
+    .r-inner { padding: 32px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Rent<span>Slip</span></div>
+  <button class="pro-pill" onclick="openModal()">&#10024; Pro &mdash; $9 lifetime, coming soon</button>
+</header>
+
+<div class="hero">
+  <h1>Rent receipts in <em>30 seconds</em>. Free.</h1>
+  <p>Fill in the details, print or save as PDF. Nothing is uploaded &mdash; it all happens in your browser. No signup, no watermark.</p>
+</div>
+
+<div class="app">
+  <div class="controls" id="formcol">
+    <h2>Receipt details</h2>
+
+    <div class="grid2">
+      <div class="field">
+        <label for="rno">Receipt number</label>
+        <input type="text" id="rno" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="pdate">Date of payment</label>
+        <input type="date" id="pdate">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="landlord">Landlord / received by <span class="req-star">*</span></label>
+      <input type="text" id="landlord" placeholder="e.g. Jane Smith" autocomplete="name">
+      <div class="hint" id="hint-landlord">Required &mdash; who is issuing this receipt?</div>
+    </div>
+
+    <div class="field">
+      <label for="tenant">Tenant / received from <span class="req-star">*</span></label>
+      <input type="text" id="tenant" placeholder="e.g. John Doe">
+      <div class="hint" id="hint-tenant">Required &mdash; who paid the rent?</div>
+    </div>
+
+    <div class="field">
+      <label for="addr">Property address <span class="req-star">*</span></label>
+      <textarea id="addr" rows="2" placeholder="e.g. 12 Maple Street, Apt 4B, Springfield"></textarea>
+      <div class="hint" id="hint-addr">Required &mdash; the rented property.</div>
+    </div>
+
+    <div class="grid2">
+      <div class="field">
+        <label for="pfrom">Rent period &mdash; from</label>
+        <input type="date" id="pfrom">
+      </div>
+      <div class="field">
+        <label for="pto">Rent period &mdash; to</label>
+        <input type="date" id="pto">
+      </div>
+    </div>
+
+    <div class="amount-row">
+      <div class="field">
+        <label for="amount">Amount <span class="req-star">*</span></label>
+        <input type="number" id="amount" min="0" step="0.01" placeholder="e.g. 1250.00" inputmode="decimal">
+        <div class="hint" id="hint-amount">Required &mdash; enter a positive amount.</div>
+      </div>
+      <div class="field">
+        <label for="currency">Currency</label>
+        <select id="currency">
+          <option value="USD" data-sym="$">$ USD</option>
+          <option value="EUR" data-sym="&#8364;">&#8364; EUR</option>
+          <option value="GBP" data-sym="&#163;">&#163; GBP</option>
+          <option value="CAD" data-sym="C$">C$ CAD</option>
+          <option value="AUD" data-sym="A$">A$ AUD</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="method">Payment method</label>
+      <select id="method">
+        <option>Cash</option>
+        <option>Check</option>
+        <option>Bank transfer</option>
+        <option>Credit card</option>
+        <option>Money order</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="words">Amount in words</label>
+      <div class="words-row">
+        <input type="text" id="words" placeholder="e.g. One thousand two hundred fifty and 00/100">
+        <button class="autobtn" type="button" onclick="autoWords()" title="Convert the amount above into words">Auto</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="notes">Notes (optional)</label>
+      <input type="text" id="notes" placeholder='e.g. "Late fee included"'>
+    </div>
+
+    <label class="checkrow"><input type="checkbox" id="sigline" checked> Include signature line</label>
+  </div>
+
+  <div class="preview-col">
+    <div class="preview-label">Live preview &mdash; this is what prints</div>
+
+    <div class="receipt" id="receipt">
+      <div class="r-inner">
+        <div class="r-head">
+          <div class="r-title">RENT RECEIPT<small>Proof of rent payment</small></div>
+          <div class="r-meta">
+            <div><b>No.</b> <span id="v-rno"></span></div>
+            <div><b>Date:</b> <span id="v-date"></span></div>
+          </div>
+        </div>
+
+        <div class="r-row"><div class="r-label">Received from</div><div class="r-val" id="v-tenant"></div></div>
+        <div class="r-row"><div class="r-label">Property</div><div class="r-val" id="v-addr"></div></div>
+        <div class="r-row"><div class="r-label">Rent period</div><div class="r-val" id="v-period"></div></div>
+        <div class="r-row" style="border-bottom:none"><div class="r-label">Payment method</div><div class="r-val" id="v-method"></div></div>
+
+        <div class="r-amountbox">
+          <span class="r-label">Amount received</span>
+          <span class="r-amount" id="v-amount"></span>
+        </div>
+        <div class="r-words" id="v-words"></div>
+        <div class="r-notes" id="v-notes" style="display:none"><b>Notes:</b> <span id="v-notes-text"></span></div>
+
+        <div class="r-foot">
+          <div class="r-recby">Received by: <b id="v-landlord"></b></div>
+          <div class="r-sig" id="v-sig">
+            <div class="r-sigline"></div>
+            <small>Landlord signature</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="printReceipt()">&#128424; Print / Save as PDF</button>
+      <button class="btn ghost" onclick="newReceipt()">+ New receipt</button>
+    </div>
+    <div class="form-msg" id="formmsg">Please fill in the highlighted fields above before printing.</div>
+    <p class="helper"><b>Tip:</b> to save as PDF, click Print and choose <b>"Save as PDF"</b> as the destination &mdash; it is built into every modern browser. "New receipt" keeps the landlord, tenant, property and amount, bumps the receipt number, and moves the rent period forward one month.</p>
+  </div>
+</div>
+
+<div class="content">
+  <h2>Why is this free when everything else wants a subscription?</h2>
+  <p>If you manage two or three rentals, you don't need a $30/month property-management suite to hand a tenant a receipt. And you shouldn't have to fight ad-stuffed PDF sites that watermark the result or email-gate the download. A rent receipt is a simple document &mdash; your browser can build it by itself, on your own machine.</p>
+  <div class="callout">
+    <p><b>RentSlip never sees your data.</b> Names, addresses and amounts stay on this page, in your browser. There is no server, no account, no database. Close the tab and it's gone. The receipt you print is the entire product.</p>
+  </div>
+
+  <h2>FAQ</h2>
+  <ul>
+    <li><b>Are landlords required to give rent receipts?</b> It varies by state and country. Many places require a receipt on request, and several require one automatically for cash payments. Some have no requirement at all. Check your local rules &mdash; this tool helps you comply, but it isn't legal advice.</li>
+    <li><b>How do I save the receipt as a PDF?</b> Click "Print / Save as PDF", then in your browser's print dialog choose "Save as PDF" as the destination instead of a printer. Works in Chrome, Edge, Safari and Firefox on desktop and most phones.</li>
+    <li><b>Is this legally valid?</b> A receipt is valid because of what it says and who signed it, not which tool produced it. This generates a standard, complete receipt (parties, property, period, amount, date, signature line). For disputes or unusual situations, ask a local professional.</li>
+    <li><b>Can I make receipts for past months?</b> Yes &mdash; every date field is editable, so you can issue a receipt for any period. Just make sure the dates reflect what actually happened.</li>
+    <li><b>Is my data stored anywhere?</b> No. Everything runs in your browser and nothing is uploaded or saved. We have no analytics, no cookies, no server-side anything. If you refresh the page, the form resets.</li>
+    <li><b>Can I generate a whole year at once?</b> Not yet &mdash; batch generation (12 months in one go) is the headline feature of RentSlip Pro, a $9 one-time purchase we're building. Until then, the "New receipt" button makes monthly repeats fast: it advances the period and receipt number for you.</li>
+  </ul>
+
+  <h2>Make your receipt now</h2>
+  <p>Scroll up, fill in five fields, print. Nothing to sign up for, nothing to cancel later &mdash; that's the whole point.</p>
+</div>
+
+<footer>
+  <div class="foot-row">
+    <span>&copy; 2026 RentSlip &mdash; rent receipts, generated in your browser. Nothing uploaded.</span>
+    <span>Contact: <a href="mailto:florianfouine470@gmail.com">florianfouine470@gmail.com</a></span>
+  </div>
+  <div class="foot-row" style="margin-top:8px">
+    <span>Part of a family of one-time-purchase tools:
+      <a href="https://fillsign.app">FillSign</a> &middot;
+      <a href="https://robin0725.github.io/shotgloss/">ShotGloss</a> &middot;
+      <a href="https://robin0725.github.io/foreverqr/">ForeverQR</a> &middot;
+      <a href="https://robin0725.github.io/subkit/">SubKit</a> &middot;
+      <a href="https://robin0725.github.io/clipgif/">ClipGIF</a> &middot;
+      <a href="https://robin0725.github.io/mailsig/">MailSig</a>
+    </span>
+  </div>
+</footer>
+
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3>&#10024; RentSlip Pro &mdash; <span class="price">$9, one-time, yours forever</span></h3>
+    <ul>
+      <li><b>Batch generation</b> &mdash; a whole year of receipts at once</li>
+      <li><b>Saved tenants &amp; properties</b> &mdash; stop retyping</li>
+      <li><b>Custom logo</b> on your receipts</li>
+    </ul>
+    <p>No subscription, ever. Everything is free while we build Pro.</p>
+    <div style="text-align:right; margin-top:14px"><button onclick="closeModal()">Got it</button></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ---------- helpers ---------- */
+var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function el(id) { return document.getElementById(id); }
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+function toISO(y, m, d) { return y + '-' + pad2(m) + '-' + pad2(d); }
+
+function todayISO() {
+  var t = new Date();
+  return toISO(t.getFullYear(), t.getMonth() + 1, t.getDate());
+}
+
+function parseISO(s) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || '');
+  if (!m) return null;
+  return { y: +m[1], m: +m[2], d: +m[3] };
+}
+
+function fmtDate(s) {
+  var p = parseISO(s);
+  if (!p) return '';
+  return MONTHS[p.m - 1] + ' ' + p.d + ', ' + p.y;
+}
+
+function daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+
+function addOneMonth(s) {
+  var p = parseISO(s);
+  if (!p) return s;
+  var y = p.y, m = p.m + 1;
+  if (m > 12) { m = 1; y++; }
+  var d = Math.min(p.d, daysInMonth(y, m));
+  return toISO(y, m, d);
+}
+
+function fmtAmount(n) {
+  var fixed = n.toFixed(2);
+  var parts = fixed.split('.');
+  return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + parts[1];
+}
+
+function currencySymbol() {
+  var sel = el('currency');
+  return sel.options[sel.selectedIndex].getAttribute('data-sym');
+}
+
+/* ---------- number to words (up to 999,999.99) ---------- */
+var ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+var TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+function threeDigitWords(n) { /* 1..999 */
+  var parts = [];
+  if (n >= 100) {
+    parts.push(ONES[Math.floor(n / 100)] + ' hundred');
+    n = n % 100;
+  }
+  if (n >= 20) {
+    var t = TENS[Math.floor(n / 10)];
+    var o = n % 10;
+    parts.push(o ? t + '-' + ONES[o] : t);
+  } else if (n > 0) {
+    parts.push(ONES[n]);
+  }
+  return parts.join(' ');
+}
+
+function amountToWords(value) {
+  var num = parseFloat(value);
+  if (isNaN(num) || num < 0) return '';
+  var totalCents = Math.round(num * 100);
+  if (totalCents > 99999999) return ''; /* above 999,999.99 */
+  var whole = Math.floor(totalCents / 100);
+  var cents = totalCents % 100;
+  var words;
+  if (whole === 0) {
+    words = 'zero';
+  } else {
+    var thousands = Math.floor(whole / 1000);
+    var rest = whole % 1000;
+    var parts = [];
+    if (thousands) parts.push(threeDigitWords(thousands) + ' thousand');
+    if (rest) parts.push(threeDigitWords(rest));
+    words = parts.join(' ');
+  }
+  words = words.charAt(0).toUpperCase() + words.slice(1);
+  return words + ' and ' + pad2(cents) + '/100';
+}
+
+function autoWords() {
+  var w = amountToWords(el('amount').value);
+  if (!w) {
+    el('words').value = '';
+    el('words').placeholder = 'Enter an amount up to 999,999.99 first';
+  } else {
+    el('words').value = w;
+  }
+  update();
+}
+
+/* ---------- receipt number ---------- */
+function suggestReceiptNo() {
+  return 'R-' + new Date().getFullYear() + '-001';
+}
+
+function incrementReceiptNo(s) {
+  var m = /^(.*?)(\d+)$/.exec(s);
+  if (!m) return (s ? s + '-' : 'R-') + '2';
+  var digits = m[2];
+  var next = '' + (parseInt(digits, 10) + 1);
+  while (next.length < digits.length) next = '0' + next;
+  return m[1] + next;
+}
+
+/* ---------- live preview ---------- */
+function setVal(id, text, placeholderText) {
+  var node = el(id);
+  if (text) {
+    node.textContent = text;
+    node.classList.remove('placeholder');
+  } else {
+    node.textContent = placeholderText;
+    node.classList.add('placeholder');
+  }
+}
+
+function update() {
+  setVal('v-rno', el('rno').value.trim(), '\u2014');
+  setVal('v-date', fmtDate(el('pdate').value), '\u2014');
+  setVal('v-tenant', el('tenant').value.trim(), 'Tenant name');
+  setVal('v-addr', el('addr').value.trim(), 'Property address');
+  setVal('v-landlord', el('landlord').value.trim(), 'Landlord name');
+  el('v-method').textContent = el('method').value;
+
+  var from = fmtDate(el('pfrom').value);
+  var to = fmtDate(el('pto').value);
+  var period = '';
+  if (from && to) period = from + ' \u2013 ' + to;
+  else if (from) period = 'From ' + from;
+  else if (to) period = 'Until ' + to;
+  setVal('v-period', period, 'Rent period');
+
+  var amt = parseFloat(el('amount').value);
+  if (!isNaN(amt) && amt >= 0) {
+    setVal('v-amount', currencySymbol() + fmtAmount(amt), '');
+  } else {
+    setVal('v-amount', '', currencySymbol() + '0.00');
+  }
+
+  setVal('v-words', el('words').value.trim(), 'Amount in words');
+
+  var notes = el('notes').value.trim();
+  el('v-notes').style.display = notes ? 'block' : 'none';
+  el('v-notes-text').textContent = notes;
+
+  el('v-sig').style.display = el('sigline').checked ? 'block' : 'none';
+}
+
+/* ---------- validation ---------- */
+var REQUIRED = ['landlord', 'tenant', 'addr', 'amount'];
+
+function fieldValid(id) {
+  if (id === 'amount') {
+    var n = parseFloat(el('amount').value);
+    return !isNaN(n) && n > 0;
+  }
+  return el(id).value.trim() !== '';
+}
+
+function showHint(id, bad) {
+  el(id).classList.toggle('invalid', bad);
+  el('hint-' + id).classList.toggle('show', bad);
+}
+
+function validateAll() {
+  var firstBad = null;
+  for (var i = 0; i < REQUIRED.length; i++) {
+    var id = REQUIRED[i];
+    var bad = !fieldValid(id);
+    showHint(id, bad);
+    if (bad && !firstBad) firstBad = id;
+  }
+  return firstBad;
+}
+
+/* ---------- actions ---------- */
+function printReceipt() {
+  var firstBad = validateAll();
+  if (firstBad) {
+    el('formmsg').classList.add('show');
+    el(firstBad).focus();
+    el(firstBad).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  el('formmsg').classList.remove('show');
+  update();
+  window.print();
+}
+
+function newReceipt() {
+  el('rno').value = incrementReceiptNo(el('rno').value.trim() || suggestReceiptNo());
+  if (el('pfrom').value) el('pfrom').value = addOneMonth(el('pfrom').value);
+  if (el('pto').value) el('pto').value = addOneMonth(el('pto').value);
+  /* landlord, tenant, property, amount, method, currency, notes are kept */
+  el('formmsg').classList.remove('show');
+  update();
+  el('receipt').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function openModal() { el('modal').classList.add('open'); }
+function closeModal() { el('modal').classList.remove('open'); }
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ---------- init ---------- */
+(function init() {
+  el('rno').value = suggestReceiptNo();
+  el('pdate').value = todayISO();
+  var t = new Date();
+  var y = t.getFullYear(), m = t.getMonth() + 1;
+  el('pfrom').value = toISO(y, m, 1);
+  el('pto').value = toISO(y, m, daysInMonth(y, m));
+
+  var inputs = document.querySelectorAll('#formcol input, #formcol textarea, #formcol select');
+  for (var i = 0; i < inputs.length; i++) {
+    inputs[i].addEventListener('input', update);
+    inputs[i].addEventListener('change', update);
+  }
+  for (var j = 0; j < REQUIRED.length; j++) {
+    (function (id) {
+      el(id).addEventListener('blur', function () { showHint(id, !fieldValid(id)); });
+      el(id).addEventListener('input', function () { if (fieldValid(id)) showHint(id, false); });
+    })(REQUIRED[j]);
+  }
+  update();
+})();
+</script>
+</body>
+</html>
